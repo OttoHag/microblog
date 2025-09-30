@@ -1,0 +1,22 @@
+# Virtuelt miljø
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Flask-migrasjoner
+migrations/
+
+# IDE-filer
+.vscode/
+.idea/
+
+# OS-filer
+.DS_Store
+Thumbs.db
+
+# Miljøvariabler
+.env
+.flaskenv
