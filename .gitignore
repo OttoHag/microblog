@@ -1,22 +1,37 @@
-# Virtuelt miljø
-venv/
-
-# Python cache
-__pycache__/
 *.py[cod]
-*.pyo
 
-# Flask-migrasjoner
-migrations/
+# C Extensions
+*.so
 
-# IDE-filer
-.vscode/
-.idea/
+# Packages
+*.egg
+*.egg-info/
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+__pycache__
 
-# OS-filer
-.DS_Store
-Thumbs.db
+# Unit test / coverage reports
+.coverage
+.tox
+.nosetests.xml
 
-# Miljøvariabler
-.env
-.flaskenv
+#Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+venv
+app.db
+microblog.db*
