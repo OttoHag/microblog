@@ -1,27 +1,30 @@
-# Welcome to Microblog!
-
-This is an example application featured in my [Flask Mega-Tutorial](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world). See the tutorial for instructions on how to work with it.
-<<<<<<< HEAD
-=======
-
-
 # Microblog
 
-A simple microblogging web application built with Flask. This project is designed to help you learn how to build a web app with user authentication, database integration, and basic CRUD functionality.
+A personal Flask project developed by Geir Otto Hag — focused on login functionality, form handling, and database integration. Built for learning, exploration, and sharing.
 
-## 🚀 Technologies Used
+## 🚀 Features
 
+- User login with Flask-WTF and validation
+- Jinja2 templates with `base.html` and inheritance
+- SQLAlchemy models and database migration
+- Blueprint structure using the `create_app()` pattern
+- Ready for expansion with registration, profile pages, and more
+
+## 🛠️ Technologies
+
+- Python 3.x
 - Flask
 - Flask-WTF
-- Flask-Migrate
-- Flask-SQLAlchemy
-- Bootstrap (via templates)
+- SQLAlchemy
+- Jinja2
+- Bootstrap (optional for styling)
 
 ## 📦 Installation
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/OttoHag/microblog.git
-   cd microblog
-   ```
->>>>>>> d1350e7a6810ff9cbbb40858d2ad0a850b8c47bc
+```bash
+git clone https://github.com/OttoHag/microblog.git
+cd microblog
+python -m venv venv
+source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+pip install -r requirements.txt
+flask run

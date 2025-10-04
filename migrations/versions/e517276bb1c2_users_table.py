@@ -1,9 +1,7 @@
 """users table
-
 Revision ID: e517276bb1c2
 Revises: 
 Create Date: 2017-09-11 11:23:05.566844
-
 """
 from alembic import op
 import sqlalchemy as sa
