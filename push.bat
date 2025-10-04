@@ -11,7 +11,8 @@ REM Commit med standardmelding
 git commit -m "Oppdatering via batch"
 
 REM Pusher til GitHub
-git push origin main
+git branch -m master main
+git push -u origin main
 
 echo Ferdig!
 pause
