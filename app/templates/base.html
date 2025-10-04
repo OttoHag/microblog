@@ -1,6 +1,13 @@
+<<<<<<< HEAD
 <!doctype html>
 <html>
     <head>
+=======
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+>>>>>>> d1350e7a6810ff9cbbb40858d2ad0a850b8c47bc
         {% if title %}
         <title>{{ title }} - Microblog</title>
         {% else %}
@@ -14,6 +21,7 @@
             <a href="{{ url_for('login') }}">Login</a>
         </div>
         <hr>
+<<<<<<< HEAD
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         <ul>
@@ -23,6 +31,17 @@
         </ul>
         {% endif %}
         {% endwith %}
+=======
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+>>>>>>> d1350e7a6810ff9cbbb40858d2ad0a850b8c47bc
         {% block content %}{% endblock %}
     </body>
 </html>
