@@ -1,0 +1,17 @@
+def explain_flask_error(error_message: str) -> str:
+    if "BuildError" in error_message and "'/index'" in error_message:
+        return "Du har brukt url_for('/index'), men Flask vil ha funksjonsnavnet: url_for('index')."
+    
+    elif "Working outside of application context" in error_message:
+        return "Du prøver å bruke Flask-funksjoner som krever aktiv app-kontekst. Bruk 'with app.app_context():' hvis du er utenfor en rute."
+
+    elif "ImportError" in error_message and "cannot import name" in error_message:
+        return "Du prøver å importere noe som ikke finnes eller er feilskrevet. Sjekk at klassen eller funksjonen faktisk er definert."
+
+    elif "AttributeError" in error_message and "model" in error_message:
+        return "Du har skrevet 'db.model' med liten m. Det skal være 'db.Model' med stor M."
+
+    elif "TemplateNotFound" in error_message:
+        return "Flask finner ikke HTML-filen du prøver å bruke. Sjekk at 'templates/index.html' faktisk finnes og er riktig navngitt."
+
+    return "Beklager, jeg kjenner ikke igjen denne feilen ennå – men du kan legge den til!"

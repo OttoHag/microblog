@@ -1,19 +1,11 @@
 *.py[cod]
 
-<<<<<<< HEAD
 # C extensions
-=======
-# C Extensions
->>>>>>> d1350e7a6810ff9cbbb40858d2ad0a850b8c47bc
 *.so
 
 # Packages
 *.egg
-<<<<<<< HEAD
 *.egg-info
-=======
-*.egg-info/
->>>>>>> d1350e7a6810ff9cbbb40858d2ad0a850b8c47bc
 dist
 build
 eggs
@@ -27,7 +19,6 @@ lib
 lib64
 __pycache__
 
-<<<<<<< HEAD
 # Installer logs
 pip-log.txt
 
@@ -37,14 +28,6 @@ pip-log.txt
 nosetests.xml
 
 # Translations
-=======
-# Unit test / coverage reports
-.coverage
-.tox
-.nosetests.xml
-
-#Translations
->>>>>>> d1350e7a6810ff9cbbb40858d2ad0a850b8c47bc
 *.mo
 
 # Mr Developer
@@ -54,8 +37,4 @@ nosetests.xml
 
 venv
 app.db
-<<<<<<< HEAD
 microblog.log*
-=======
-microblog.db*
->>>>>>> d1350e7a6810ff9cbbb40858d2ad0a850b8c47bc
