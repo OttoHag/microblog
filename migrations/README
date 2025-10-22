@@ -1,1 +1,35 @@
-Single-database configuration for Flask.
+# Microblog Flask App
+
+Dette er en enkel webapplikasjon bygget med Flask, med støtte for brukerregistrering, innlogging og beskyttede sider.
+
+## Funksjoner
+
+- Brukerautentisering med Flask-Login
+- Registrerings- og innloggingsskjema med Flask-WTF
+- HTML-templates med feilhåndtering og flash-meldinger
+- Ryddig prosjektstruktur med Blueprints og fabrikkmønster
+
+## Teknologi
+
+- Python 3.12
+- Flask
+- SQLAlchemy
+- Flask-WTF
+- Flask-Login
+
+## Neste steg
+
+- Internasjonalisering (i18n)
+- Brukerprofiler
+- Bedre styling med CSS eller Bootstrap
+
+## Kom i gang
+
+```bash
+git clone https://github.com/OttoHag/microblog.git
+cd microblog
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+flask run
+
