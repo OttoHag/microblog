@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request
-from flask_login import current_user, login_user, logout_user, current_user, login_required
+from flask_login import current_user, login_user, logout_user, login_required
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 from app import db
@@ -16,7 +16,7 @@ bp = Blueprint('main', __name__)
 @bp.before_app_request
 def before_request():
     if current_user.is_authenticated:
-        current_user.last_seen = datetime.now()
+        current_user.last_seen = datetime.utcnow()
         db.session.commit()
 
 
@@ -48,6 +48,7 @@ def login():
     return render_template('login.html', title='Sign In', form=form)
 
 @bp.route('/logout')
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('main.index'))
@@ -89,5 +90,11 @@ def edit_profile():
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.about_me.data = current_user.about_me
-        
+
     return render_template('edit_profile.html', title='Edit Profile', form=form)
+
+@bp.route('/test_email')
+def test_email():
+    current_app.logger.error("Test: Dette er en simulert feilmelding for å teste e-postvarsling.")
+    flash("Feilmelding logget – sjekk e-post eller terminal.")
+    return redirect(url_for('main.index'))
