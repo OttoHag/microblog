@@ -27,23 +27,24 @@ def create_app():
     from app.error import bp_error
     app.register_blueprint(bp_error)
 
-    # E-postvarsling ved feil
+    # Alltid logg til fil
+    if not os.path.exists('logs'):
+    os.mkdir('logs')
+    file_handler = RotatingFileHandler('logs/microblog.log', maxBytes=10240, backupCount=10)
+    file_handler.setFormatter(logging.Formatter(
+    '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+    ))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('Microblog startup')
+
+    # E-postvarsling ved feil (kun i produksjon)
     if not app.debug and app.config.get('MAIL_SERVER'):
         auth = None
         if app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
             auth = (app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-
-        if not os.path.exists('logs'):
-            os.mkdir('logs')
-        file_handler = RotatingFileHandler('logs/microblog.log', maxBytes=10240, backupCount=10)
-        file_handler.setFormatter(logging.Formatter(
-            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
-        ))
-        file_handler.setLevel(logging.INFO)
-        app.logger.addHandler(file_handler)
-
-        app.logger.setLevel(logging.INFO)
-        app.logger.info('Microblog startup')
 
         secure = ()
         if not app.config.get('MAIL_USE_TLS'):
@@ -60,15 +61,20 @@ def create_app():
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
 
-    try:
-        app.logger.error("Test: Sjekker om SMTPHandler faktisk prøver å sende.")
-    except Exception as e:
-        print("Feil ved e-postsending:", e)
 
-        # Debugging: skriv ut e-postkonfig
-        print("MAIL CONFIG:")
-        for key in ['MAIL_SERVER', 'MAIL_PORT', 'MAIL_USE_TLS', 'MAIL_USERNAME', 'MAIL_PASSWORD', 'ADMINS']:
-            print(f"{key}: {app.config.get(key)}")
+        try:
+            app.logger.error("Test: Sjekker om SMTPHandler faktisk prøver å sende.")
+        except Exception as e:
+            print("Feil ved e-postsending:", e)
+
+            # Debugging: skriv ut e-postkonfig
+            print("MAIL CONFIG:")
+            for key in ['MAIL_SERVER', 'MAIL_PORT', 'MAIL_USE_TLS', 'MAIL_USERNAME', 'MAIL_PASSWORD', 'ADMINS']:
+                print(f"{key}: {app.config.get(key)}")
+
+    from app import models  # sørger for at modellene er lastet inn
+
+    return app
 
     # Logg til fil
     if not os.path.exists('logs'):
@@ -83,13 +89,11 @@ def create_app():
     app.logger.setLevel(logging.INFO)
     app.logger.info('Microblog startup')
 
-    from app import models  # sørger for at modellene er lastet inn
 
-    return app
 
-# 🔐 Brukerinnlasting for Flask-Login
-from app.models import User
+    # 🔐 Brukerinnlasting for Flask-Login
+    from app.models import User
 
-@login.user_loader
-def load_user(id):
-    return User.query.get(int(id))
+    @login.user_loader
+    def load_user(id):
+        return User.query.get(int(id))
