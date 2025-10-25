@@ -1,9 +1,13 @@
 body {
-  background-color: #f0f8ff;
+  background-color: #0f5469;
   font-family: 'Helvetica Neue', sans-serif;
-  color: #333;
+  color: #b1c4c7;
   margin: 0;
   padding: 0;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 .container {
@@ -13,7 +17,7 @@ body {
 }
 
 a {
-  color: #0066cc;
+  color: #a85e87;
   text-decoration: none;
 }
 a:hover {

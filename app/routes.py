@@ -9,6 +9,7 @@ from app.models import User
 from urllib.parse import urlparse
 from datetime import datetime
 from app.forms import EditProfileForm
+from app.forms import EmptyForm
 
 bp = Blueprint('main', __name__)
 
@@ -27,7 +28,7 @@ def edit_profile():
         form.about_me.data = current_user.about_me
 
     return render_template('edit_profile.html', title='Edit Profile', form=form)
-    
+
 @bp.before_app_request
 def before_request():
     if current_user.is_authenticated:
@@ -90,12 +91,13 @@ def user(username):
         {'author': user, 'body': 'Test post #1'},
         {'author': user, 'body': 'Test post #2'}
     ]
-    return render_template('user.html', user=user, posts=posts)
+    form = EmptyForm()
+    return render_template('user.html', user=user, posts=posts, form=form)
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
-    form = EditProfileForm(obj=current_user)
+    form = EditProfileForm(original_username=current_user.username)
     if form.validate_on_submit():
         current_user.username = form.username.data
         current_user.about_me = form.about_me.data
@@ -113,3 +115,41 @@ def test_email():
     current_app.logger.error("Test: Dette er en simulert feilmelding for å teste e-postvarsling.")
     flash("Feilmelding logget – sjekk e-post eller terminal.")
     return redirect(url_for('main.index'))
+
+@bp.route('/follow/<username>', methods=['POST'])
+@login_required
+def follow(username):
+    form = EmptyForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=username).first()
+        if user is None:
+            flash('User {} not found.'.format(username))
+            return redirect(url_for('main.index'))
+        if user == current_user:
+            flash('You cannot follow yourself!')
+            return redirect(url_for('main.user', username=username))
+        current_user.follow(user)
+        db.session.commit()
+        flash('You are now following {}!'.format(username))
+        return redirect(url_for('main.user', username=username))
+    else:
+        return redirect(url_for('main.index'))
+
+@bp.route('/unfollow/<username>', methods=['POST'])
+@login_required
+def unfollow(username):
+    form = EmptyForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=username).first()
+        if user is None:
+            flash('User {} not found.'.format(username))
+            return redirect(url_for('main.index'))
+        if user == current_user:
+            flash('You cannot unfollow yourself!')
+            return redirect(url_for('main.user', username=username))
+        current_user.unfollow(user)
+        db.session.commit()
+        flash('You have unfollowed {}.'.format(username))
+        return redirect(url_for('main.user', username=username))
+    else:
+        return redirect(url_for('main.index'))
