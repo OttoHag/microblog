@@ -23,10 +23,11 @@ class UserModelCase(unittest.TestCase):
         self.assertFalse(u.check_password('dog'))
         self.assertTrue(u.check_password('cat'))
 
-    def test_follow(self):
+    def test_avatar(self):
         u = User(username='john', email='john@example.com')
-        self.assertEqual(u.avatar(128),
-                         'https://www.gravatar.com/avatar/527bd5b5d689e25c3d3c8d0f1f5f6e46?d=identicon&s=128')
+        digest = hashlib.md5(u.email.lower().encode('utf-8')).hexdigest()
+        excepted_url = f'https://www.gravatar.com/avatar/{digest}?d=identicon&s=128'
+        self.assertEqual(u.avatar(128), excepted_url)
 
     def test_follow(self):
         u1 = User(username='john', email='john@example.com')
