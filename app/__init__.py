@@ -1,7 +1,10 @@
+import os
+import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
+from logging.handlers import SMTPHandler, RotatingFileHandler
 from config import Config
 
 db = SQLAlchemy()
@@ -18,56 +21,75 @@ def create_app():
     login.init_app(app)
 
     from app.routes import bp as main_bp
+    from app import error
     app.register_blueprint(main_bp)
 
     from app.error import bp_error
     app.register_blueprint(bp_error)
 
-import logging
-from logging.handlers import SMTPHandler, RotatingFileHandler
-    if not app.debug:
-        if app.config['MAIL_SERVER']:
-            auth = None
-            if app.config['MAIL_USERNAME'] or app.config['MAIL_PASSWORD']:
-                auth = (app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-
-            secure = None
-            if app.config['MAIL_USE_TLS']:
-                secure = ()
-
-            mail_handler = SMTPHandler(
-                mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
-                fromaddr='no-reply@' + app.config['MAIL_SERVER'],
-                toaddrs=app.config['ADMINS'], subject='Microblog Failure',
-                credentials=auth, secure=secure)
-                
-            mail_handler.setLevel(logging.ERROR)
-            app.logger.addHandler(mail_handler)
+    # E-postvarsling ved feil
+    if not app.debug and app.config.get('MAIL_SERVER'):
+        auth = None
+        if app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
+            auth = (app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
 
         if not os.path.exists('logs'):
             os.mkdir('logs')
-        file_handler = RotatingFileHandler('logs/microblog.log', maxBytes=10240,
-                                           backupCount=10)
+        file_handler = RotatingFileHandler('logs/microblog.log', maxBytes=10240, backupCount=10)
         file_handler.setFormatter(logging.Formatter(
-            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+        ))
         file_handler.setLevel(logging.INFO)
         app.logger.addHandler(file_handler)
 
         app.logger.setLevel(logging.INFO)
         app.logger.info('Microblog startup')
 
+        secure = ()
+        if not app.config.get('MAIL_USE_TLS'):
+            secure = None
+
+        mail_handler = SMTPHandler(
+            mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
+            fromaddr='no-reply@' + app.config['MAIL_SERVER'],
+            toaddrs=app.config['ADMINS'],
+            subject='Microblog Failure',
+            credentials=auth,
+            secure=secure
+        )
+        mail_handler.setLevel(logging.ERROR)
+        app.logger.addHandler(mail_handler)
+
+    try:
+        app.logger.error("Test: Sjekker om SMTPHandler faktisk prøver å sende.")
+    except Exception as e:
+        print("Feil ved e-postsending:", e)
+
+        # Debugging: skriv ut e-postkonfig
+        print("MAIL CONFIG:")
+        for key in ['MAIL_SERVER', 'MAIL_PORT', 'MAIL_USE_TLS', 'MAIL_USERNAME', 'MAIL_PASSWORD', 'ADMINS']:
+            print(f"{key}: {app.config.get(key)}")
+
+    # Logg til fil
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+    file_handler = RotatingFileHandler('logs/microblog.log', maxBytes=10240, backupCount=10)
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+    ))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('Microblog startup')
+
     from app import models  # sørger for at modellene er lastet inn
 
     return app
 
-# 🔧 Viktig: denne må stå utenfor create_app()
+# 🔐 Brukerinnlasting for Flask-Login
 from app.models import User
 
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
-
-from app import routes, models, error  # importerer error handlers
-
-
-
