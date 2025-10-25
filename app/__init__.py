@@ -62,27 +62,18 @@ def create_app():
         app.logger.addHandler(mail_handler)
 
 
-        try:
-            app.logger.error("Test: Sjekker om SMTPHandler faktisk prøver å sende.")
-        except Exception as e:
-            print("Feil ved e-postsending:", e)
+        #try:
+            #app.logger.error("Test: Sjekker om SMTPHandler faktisk prøver å sende.")
+        #except Exception as e:
+         #   print("Feil ved e-postsending:", e)
 
             # Debugging: skriv ut e-postkonfig
-            print("MAIL CONFIG:")
-            for key in ['MAIL_SERVER', 'MAIL_PORT', 'MAIL_USE_TLS', 'MAIL_USERNAME', 'MAIL_PASSWORD', 'ADMINS']:
-                print(f"{key}: {app.config.get(key)}")
+           # print("MAIL CONFIG:")
+            #for key in ['MAIL_SERVER', 'MAIL_PORT', 'MAIL_USE_TLS', 'MAIL_USERNAME', 'MAIL_PASSWORD', 'ADMINS']:
+             #   print(f"{key}: {app.config.get(key)}")
 
     from app import models  # sørger for at modellene er lastet inn
 
-    return app
-
-    # Logg til fil
-    if not os.path.exists('logs'):
-        os.mkdir('logs')
-    file_handler = RotatingFileHandler('logs/microblog.log', maxBytes=10240, backupCount=10)
-    file_handler.setFormatter(logging.Formatter(
-        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
-    ))
     file_handler.setLevel(logging.INFO)
     app.logger.addHandler(file_handler)
 
@@ -97,3 +88,5 @@ def create_app():
     @login.user_loader
     def load_user(id):
         return User.query.get(int(id))
+
+    return app
