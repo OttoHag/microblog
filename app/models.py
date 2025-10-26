@@ -28,7 +28,23 @@ class User(UserMixin, db.Model):
 
     posts: so.Mapped[List['Post']] = so.relationship(
         back_populates='author',
-        lazy='dynamic')
+        lazy='dynamic'
+    )
+
+    following: so.Mapped[List['User']] = so.relationship(
+        secondary=followers,
+        primaryjoin=(followers.c.follower_id == id),
+        secondaryjoin=(followers.c.followed_id == id),
+        backref=so.backref('followers', lazy='dynamic'),
+        lazy='dynamic'
+    )
+    followers: so.Mapped[List['User']] = so.relationship(
+        secondary=followers,
+        primaryjoin=(followers.c.followed_id == id),
+        secondaryjoin=(followers.c.follower_id == id),
+        backref=so.backref('following', lazy='dynamic'),
+        lazy='dynamic'
+    )
 
     followed = so.relationship(
         'User',
@@ -36,31 +52,12 @@ class User(UserMixin, db.Model):
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
         backref=so.backref('followers', lazy='dynamic'),
-        lazy='dynamic')
-    
-    def followed_posts(self):
-        followed = Post.query.join(
-            followers, (followers.c.followed_id == Post.user_id)).filter(
-                followers.c.follower_id == self.id)
-        own = Post.query.filter_by(user_id=self.id)
-        return followed.union(own).order_by(Post.timestamp.desc())
-
-    def follow(self, user):
-        if not self.is_following(user):
-            self.followed.append(user)
-
-    def unfollow(self, user):
-        if self.is_following(user):
-            self.followed.remove(user)
-
-    def is_following(self, user):
-        return self.followed.filter(
-            followers.c.followed_id == user.id
-        ).count() > 0
+        lazy='dynamic'
+    )
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
-    
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -70,6 +67,38 @@ class User(UserMixin, db.Model):
     def avatar(self, size):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
+
+    def follow(self, user):
+        if not self.is_following(user):
+            self.following.append(user)
+
+    def unfollow(self, user):
+        if self.is_following(user):
+            self.following.remove(user)
+
+    def is_following(self, user):
+        return self.following.filter(
+            followers.c.followed_id == user.id
+        ).count() > 0
+
+    def followers_count(self):
+        query = sa.select(sa.func.count()).select_from(self.followers.select().subquery())
+        return db.session.scalar(query)
+
+    def followed_posts(self):
+    return (
+        sa.select(Post)
+        .join(Post.author)
+        .where(
+            sa.or_(
+                Post.author_id == self.id,
+                Post.author_id.in_(
+                    self.following.with_entities(User.id).subquery()
+                )
+            )
+        )
+        .order_by(Post.timestamp.desc())
+    )
 
 @login.user_loader
 def load_user(id):
