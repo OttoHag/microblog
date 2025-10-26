@@ -1,10 +1,10 @@
-import os
 import logging
+from logging.handlers import SMTPHandler, RotatingFileHandler
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
-from logging.handlers import SMTPHandler, RotatingFileHandler
 from config import Config
 
 db = SQLAlchemy()
@@ -46,9 +46,7 @@ def create_app():
         if app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
             auth = (app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
 
-        secure = ()
-        if not app.config.get('MAIL_USE_TLS'):
-            secure = None
+        secure = () if app.config.get('MAIL_USE_TLS') else None
 
         mail_handler = SMTPHandler(
             mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
@@ -61,26 +59,7 @@ def create_app():
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
 
-
-        #try:
-            #app.logger.error("Test: Sjekker om SMTPHandler faktisk prøver å sende.")
-        #except Exception as e:
-         #   print("Feil ved e-postsending:", e)
-
-            # Debugging: skriv ut e-postkonfig
-           # print("MAIL CONFIG:")
-            #for key in ['MAIL_SERVER', 'MAIL_PORT', 'MAIL_USE_TLS', 'MAIL_USERNAME', 'MAIL_PASSWORD', 'ADMINS']:
-             #   print(f"{key}: {app.config.get(key)}")
-
     from app import models  # sørger for at modellene er lastet inn
-
-    file_handler.setLevel(logging.INFO)
-    app.logger.addHandler(file_handler)
-
-    app.logger.setLevel(logging.INFO)
-    app.logger.info('Microblog startup')
-
-
 
     # 🔐 Brukerinnlasting for Flask-Login
     from app.models import User

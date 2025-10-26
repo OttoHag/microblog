@@ -1,9 +1,11 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
+from wtforms import ValidationError
+from wtforms.validators import DataRequired, Email, EqualTo, Length
 from app.models import User
-from wtforms import StringField, TextAreaField, SubmitField
-from wtforms.validators import DataRequired, Length
+import sqlalchemy as sa
+from app import db
+from app.models import User
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -17,19 +19,17 @@ class RegistrationForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     password2 = PasswordField('Repeat Password', validators=[
         DataRequired(), EqualTo('password')])
-    # remember_me = BooleanField('Remember Me')
-    # submit = SubmitField('Sign In')
     submit = SubmitField('Register')
 
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user is not None:
-            raise ValueError('Please use a different username.')
+            raise ValidationError('Please use a different username.')
     
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
-            raise ValueError('Please use a different email address.')
+            raise ValidationError('Please use a different email address.')
 
 class EditProfileForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -42,9 +42,9 @@ class EditProfileForm(FlaskForm):
 
     def validate_username(self, username):
         if username.data != self.original_username:
-            user = User.query.filter_by(username=self.username.data).first()
+            user = User.query.filter_by(username=username.data).first()
             if user is not None:
-                raise ValueError('Please use a different username.')
+                raise ValidationError('Please use a different username.')
 
 class EmptyForm(FlaskForm):
     submit = SubmitField('Submit')
