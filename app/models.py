@@ -83,8 +83,8 @@ class User(UserMixin, db.Model):
             .join(Post.author)
             .where(
                 sa.or_(
-                    Post.author_id == self.id,
-                    Post.author_id.in_(
+                    Post.user_id == self.id,
+                    Post.user_id.in_(
                         self.following.with_entities(User.id).subquery()
                     )
                 )
@@ -103,7 +103,6 @@ class Post(db.Model):
         index=True, default=lambda: datetime.now(timezone.utc))
     user_id: so.Mapped[int] = so.mapped_column(
         sa.ForeignKey('user.id'), index=True)
-
     author: so.Mapped['User'] = so.relationship(
         back_populates='posts')
     
