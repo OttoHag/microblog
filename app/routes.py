@@ -1,17 +1,12 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request
+from flask import Blueprint, render_template, flash, redirect, url_for, request, current_app
 from flask_login import current_user, login_user, logout_user, login_required
 import sqlalchemy as sa
 import sqlalchemy.orm as so
-from app import db
-from flask import current_app
-from app.forms import LoginForm, RegistrationForm
-from app.models import User
 from urllib.parse import urlparse
 from datetime import datetime
-from app.forms import EditProfileForm
-from app.forms import EmptyForm
-from app.forms import postForm
-from app.models import Post
+from app import db
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, EmptyForm, PostForm
+from app.models import User, Post
 
 bp = Blueprint('main', __name__)
 
@@ -25,17 +20,14 @@ def before_request():
 @bp.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    form = postForm()
+    form = PostForm()
     if form.validate_on_submit():
         post = Post(body=form.post.data, author=current_user)
         db.session.add(post)
         db.session.commit()
         flash('Your post is now live!')
         return redirect(url_for('main.index'))
-    posts = [
-        {'author': {'username': 'John'}, 'body': 'Beautiful day in Portland!'},
-        {'author': {'username': 'Susan'}, 'body': 'The Avengers movie was so cool!'}
-    ]
+    posts = current_user.followed_posts().all()
     return render_template('index.html', title='Home Page', user=current_user, form=form, posts=posts)
 
 
