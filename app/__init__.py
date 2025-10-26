@@ -21,15 +21,22 @@ def create_app():
     login.init_app(app)
 
     from app.routes import bp as main_bp
-    from app import error
     app.register_blueprint(main_bp)
 
     from app.error import bp_error
     app.register_blueprint(bp_error)
 
+    from app import models
+    from app.models import User
+
+    @login.user_loader
+    def load_user(id):
+        return User.query.get(int(id))
+
     # Alltid logg til fil
     if not os.path.exists('logs'):
         os.mkdir('logs')
+
     file_handler = RotatingFileHandler('logs/microblog.log', maxBytes=10240, backupCount=10)
     file_handler.setFormatter(logging.Formatter(
         '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
@@ -60,12 +67,10 @@ def create_app():
         app.logger.addHandler(mail_handler)
 
     from app import models  # sørger for at modellene er lastet inn
-
-    # 🔐 Brukerinnlasting for Flask-Login
-    from app.models import User
+    from app.models import User  # nødvendig for brukerinnlasting
 
     @login.user_loader
-    def load_user(id):
+d   ef load_user(id):
         return User.query.get(int(id))
 
     return app
