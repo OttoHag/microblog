@@ -8,10 +8,11 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login
 
-followers = db.Table(
+followers = sa.Table(
     'followers',
-    db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
+    db.metadata,
+    sa.Column('follower_id', sa.Integer, sa.ForeignKey('user.id'), primary_key=True),
+    sa.Column('followed_id', sa.Integer, sa.ForeignKey('user.id'), primary_key=True)
 )
 
 class User(UserMixin, db.Model):
