@@ -31,27 +31,19 @@ class User(UserMixin, db.Model):
         lazy='dynamic'
     )
 
-    following: so.Mapped[List['User']] = so.relationship(
-        secondary=followers,
-        primaryjoin=(followers.c.follower_id == id),
-        secondaryjoin=(followers.c.followed_id == id),
-        backref=so.backref('followers', lazy='dynamic'),
-        lazy='dynamic'
-    )
+    #following: so.Mapped[List['User']] = so.relationship(
+     #   secondary=followers,
+      #  primaryjoin=(followers.c.follower_id == id),
+       # secondaryjoin=(followers.c.followed_id == id),
+        #backref=so.backref('followers', lazy='dynamic'),
+        #lazy='dynamic'
+    #)
+
     followers: so.Mapped[List['User']] = so.relationship(
         secondary=followers,
         primaryjoin=(followers.c.followed_id == id),
         secondaryjoin=(followers.c.follower_id == id),
         backref=so.backref('following', lazy='dynamic'),
-        lazy='dynamic'
-    )
-
-    followed = so.relationship(
-        'User',
-        secondary=followers,
-        primaryjoin=(followers.c.follower_id == id),
-        secondaryjoin=(followers.c.followed_id == id),
-        backref=so.backref('followers', lazy='dynamic'),
         lazy='dynamic'
     )
 
@@ -86,19 +78,19 @@ class User(UserMixin, db.Model):
         return db.session.scalar(query)
 
     def followed_posts(self):
-    return (
-        sa.select(Post)
-        .join(Post.author)
-        .where(
-            sa.or_(
-                Post.author_id == self.id,
-                Post.author_id.in_(
-                    self.following.with_entities(User.id).subquery()
+        return (
+            sa.select(Post)
+            .join(Post.author)
+            .where(
+                sa.or_(
+                    Post.author_id == self.id,
+                    Post.author_id.in_(
+                        self.following.with_entities(User.id).subquery()
+                    )
                 )
-            )
-        )
-        .order_by(Post.timestamp.desc())
-    )
+           )
+            .order_by(Post.timestamp.desc())
+       )
 
 @login.user_loader
 def load_user(id):
