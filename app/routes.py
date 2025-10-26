@@ -30,13 +30,13 @@ def index():
     posts = current_user.followed_posts().all()
     return render_template('index.html', title='Home Page', user=current_user, form=form, posts=posts)
 
-@app.route('/explore')
+@bp.route('/explore')
 @login_required
 def explore():
     posts = Post.query.order_by(Post.timestamp.desc()).all()
     return render_template('index.html', title='Explore', user=current_user, posts=posts)
 
-bp.route('/edit_profile', methods=['GET', 'POST'])
+@bp.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
     form = EditProfileForm(original_username=current_user.username)
