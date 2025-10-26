@@ -10,8 +10,35 @@ from urllib.parse import urlparse
 from datetime import datetime
 from app.forms import EditProfileForm
 from app.forms import EmptyForm
+from app.forms import postForm
+from app.models import Post
 
 bp = Blueprint('main', __name__)
+
+@bp.before_app_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.utcnow()
+        db.session.commit()
+
+@bp.route('/', methods=['GET', 'POST'])
+@bp.route('/index', methods=['GET', 'POST'])
+@login_required
+def index():
+    form = postForm()
+    if form.validate_on_submit():
+        post = Post(body=form.post.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Your post is now live!')
+        return redirect(url_for('main.index'))
+    posts = [
+        {'author': {'username': 'John'}, 'body': 'Beautiful day in Portland!'},
+        {'author': {'username': 'Susan'}, 'body': 'The Avengers movie was so cool!'}
+    ]
+    return render_template('index.html', title='Home Page', user=current_user, form=form, posts=posts)
+
+
 
 bp.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
@@ -28,23 +55,6 @@ def edit_profile():
         form.about_me.data = current_user.about_me
 
     return render_template('edit_profile.html', title='Edit Profile', form=form)
-
-@bp.before_app_request
-def before_request():
-    if current_user.is_authenticated:
-        current_user.last_seen = datetime.utcnow()
-        db.session.commit()
-
-
-@bp.route('/')
-@bp.route('/index')
-@login_required
-def index():
-    posts = [
-        {'author': {'username': 'John'}, 'body': 'Beautiful day in Portland!'},
-        {'author': {'username': 'Susan'}, 'body': 'The Avengers movie was so cool!'}
-    ]
-    return render_template('index.html', title='Home', user=current_user, posts=posts)
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
