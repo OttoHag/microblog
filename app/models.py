@@ -3,8 +3,8 @@ from hashlib import md5
 from typing import Optional, List
 import sqlalchemy as sa
 import sqlalchemy.orm as so
-from sqlalchemy.orm import Mapped, mapped_column, backref
 from flask_login import UserMixin
+from sqlalchemy.orm import Mapped, mapped_column, relationship, backref
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login
 
@@ -31,13 +31,13 @@ class User(UserMixin, db.Model):
         lazy='dynamic'
     )
 
-    #following: so.Mapped[List['User']] = so.relationship(
-     #   secondary=followers,
-      #  primaryjoin=(followers.c.follower_id == id),
-       # secondaryjoin=(followers.c.followed_id == id),
-        #backref=so.backref('followers', lazy='dynamic'),
-        #lazy='dynamic'
-    #)
+    following: so.Mapped[List['User']] = so.relationship(
+        secondary=followers,
+        primaryjoin=(followers.c.follower_id == id),
+        secondaryjoin=(followers.c.followed_id == id),
+        backref=so.backref('followers', lazy='dynamic'),
+        lazy='dynamic'
+    )
 
     followers: so.Mapped[List['User']] = so.relationship(
         secondary=followers,
@@ -67,26 +67,21 @@ class User(UserMixin, db.Model):
     def unfollow(self, user):
         if self.is_following(user):
             self.following.remove(user)
-
-    def is_following(self, user):
-        return self.following.filter(
-            followers.c.followed_id == user.id
-        ).count() > 0
-
+    
     def followers_count(self):
-        query = sa.select(sa.func.count()).select_from(self.followers.select().subquery())
-        return db.session.scalar(query)
+        return self.followers.count()
+
+    def following_count(self):
+        return self.following.count()
 
     def followed_posts(self):
+        followed_ids = self.following.with_entities(User.id).subquery()
         return (
             sa.select(Post)
-            .join(Post.author)
             .where(
                 sa.or_(
                     Post.user_id == self.id,
-                    Post.user_id.in_(
-                        self.following.with_entities(User.id).subquery()
-                    )
+                    Post.user_id.in_(followed_ids)
                 )
            )
             .order_by(Post.timestamp.desc())
@@ -108,4 +103,7 @@ class Post(db.Model):
     
     def __repr__(self):
         return '<Post {}>'.format(self.body)
+    
+    def __str__(self):
+        return f'Post(id={self.id}, body="{self.body}", timestamp={self.timestamp}, user_id={self.user_id})'
 

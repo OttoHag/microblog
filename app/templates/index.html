@@ -18,8 +18,12 @@
 	{% for post in posts %}
 		{% include '_post.html' %}
 	{% endfor %}
-	{% if prev_url %} <a href="{{ prev_url }}">Newer posts</a> {% endprev_url %}
+	{% if prev_url %}
+	<a href="{{ prev_url }}">Newer posts</a>
+	{% endprev_url %}
 	{% endif}
-	{% if next_url %} <a href="{{ next_url }}">Next</a> {% endnext_url %}
+	{% if next_url %}
+	<a href="{{ next_url }}">Next</a>
+	{% endnext_url %}
 	{% endif %}
 {% endblock %}
