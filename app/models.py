@@ -75,17 +75,15 @@ class User(UserMixin, db.Model):
         return self.following.count()
 
     def followed_posts(self):
-        followed_ids = self.following.with_entities(User.id).subquery()
-        return (
-            sa.select(Post)
-            .where(
-                sa.or_(
-                    Post.user_id == self.id,
-                    Post.user_id.in_(followed_ids)
-                )
-           )
-            .order_by(Post.timestamp.desc())
-       )
+        followed = sa.select(Post).join(
+            followers, followers.c.followed_id == Post.user_id
+        ).where(followers.c.follower_id == self.id)
+
+        own = sa.select(Post).where(Post.user_id == self.id)
+
+        return db.session.execute(
+            followed.union(own).order_by(Post.timestamp.desc())
+        ).scalars()
 
 @login.user_loader
 def load_user(id):
@@ -106,4 +104,5 @@ class Post(db.Model):
     
     def __str__(self):
         return f'Post(id={self.id}, body="{self.body}", timestamp={self.timestamp}, user_id={self.user_id})'
+
 

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-	<h1>Hi, {{ Current_user.username }}!</h1>
+	<h1>Hi, {{ current_user.username }}!</h1>
 	{% if form %}
 	<form action="" method="post">
 		{{ form.hidden_tag() }}
@@ -16,14 +16,15 @@
 	</form>
 	{% endif %}
 	{% for post in posts %}
-		{% include '_post.html' %}
+    {% include '_post.html' %}
 	{% endfor %}
+	
 	{% if prev_url %}
-	<a href="{{ prev_url }}">Newer posts</a>
-	{% endprev_url %}
-	{% endif}
-	{% if next_url %}
-	<a href="{{ next_url }}">Next</a>
-	{% endnext_url %}
+    	<a href="{{ prev_url }}">Newer posts</a>
 	{% endif %}
+
+	{% if next_url %}
+    	<a href="{{ next_url }}">Next</a>
+	{% endif %}
+
 {% endblock %}
