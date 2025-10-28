@@ -31,11 +31,11 @@ class User(UserMixin, db.Model):
         lazy='dynamic'
     )
 
-    following: so.Mapped[List['User']] = so.relationship(
+    following: Mapped[List['User']] = relationship(
         secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
-        backref=backref('followers', lazy='dynamic'),
+        back_populates='followers',
         lazy='dynamic'
     )
 
@@ -43,7 +43,7 @@ class User(UserMixin, db.Model):
         secondary=followers,
         primaryjoin=(followers.c.followed_id == id),
         secondaryjoin=(followers.c.follower_id == id),
-        backref=backref('following', lazy='dynamic'),
+        back_populates='following',
         lazy='dynamic'
     )
 
