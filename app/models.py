@@ -35,7 +35,7 @@ class User(UserMixin, db.Model):
         secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
-        backref=so.backref('followers', lazy='dynamic'),
+        backref=backref('followers', lazy='dynamic'),
         lazy='dynamic'
     )
 
@@ -43,7 +43,7 @@ class User(UserMixin, db.Model):
         secondary=followers,
         primaryjoin=(followers.c.followed_id == id),
         secondaryjoin=(followers.c.follower_id == id),
-        backref=so.backref('following', lazy='dynamic'),
+        backref=backref('following', lazy='dynamic'),
         lazy='dynamic'
     )
 
@@ -89,7 +89,7 @@ class User(UserMixin, db.Model):
 
 @login.user_loader
 def load_user(id):
-    return db.session.get(User, int(id))
+    return db.session.execute(sa.select(User).where(User.id == int(id))).scalar_one_or_none()
 
 class Post(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)

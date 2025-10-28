@@ -1,11 +1,11 @@
-import logging
-from logging.handlers import SMTPHandler, RotatingFileHandler
-import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from config import Config
+import logging
+from logging.handlers import SMTPHandler, RotatingFileHandler
+import os
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -14,9 +14,9 @@ migrate = Migrate()
 login = LoginManager()
 login.login_view = 'main.login'  # navnet på login-ruten i blueprint
 
-def create_app():
+def create_app(config_class=Config):
     app = Flask(__name__)
-    app.config.from_object(Config)
+    app.config.from_object(config_class)
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -48,7 +48,6 @@ def create_app():
             )
             mail_handler.setLevel(logging.ERROR)
             app.logger.addHandler(mail_handler)
-            app.logger.info('Email error logging setup complete.')
 
         if not os.path.exists('logs'):
             os.mkdir('logs')
