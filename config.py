@@ -16,3 +16,4 @@ class Config:
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'geirolar@hotmail.com'
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or None
     ADMINS = ['geirolar@hotmail.com']
+    POSTS_PER_PAGE = 10

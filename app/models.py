@@ -74,16 +74,19 @@ class User(UserMixin, db.Model):
     def following_count(self):
         return self.following.count()
 
-    def followed_posts(self):
-        followed = sa.select(Post).join(
-            followers, followers.c.followed_id == Post.user_id
-        ).where(followers.c.follower_id == self.id)
+def followed_posts(self):
+    followed = sa.select(Post).join(
+        followers, followers.c.followed_id == Post.user_id
+    ).where(followers.c.follower_id == self.id)
 
-        own = sa.select(Post).where(Post.user_id == self.id)
+    own = sa.select(Post).where(Post.user_id == self.id)
 
-        return db.session.execute(
-            followed.union(own).order_by(Post.timestamp.desc())
-        ).scalars()
+    return db.session.execute(
+        followed.union(own).order_by(Post.timestamp.desc())
+    ).scalars()
+User.followed_posts = followed_posts
+
+
 
 @login.user_loader
 def load_user(id):

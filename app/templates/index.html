@@ -7,7 +7,7 @@
 		{{ form.hidden_tag() }}
 		<p>
 			{{ form.post.label }}<br>
-			{{ form.post(rows=32, cols=4) }}<br>
+			{{ form.post(rows=4, cols=32) }}<br>
 			{% for error in form.post.errors %}
 			<span style="color: red;">[{{ error }}]</span>
 			{% endfor %}
@@ -18,7 +18,7 @@
 	{% for post in posts %}
     {% include '_post.html' %}
 	{% endfor %}
-	
+
 	{% if prev_url %}
     	<a href="{{ prev_url }}">Newer posts</a>
 	{% endif %}
