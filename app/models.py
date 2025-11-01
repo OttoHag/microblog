@@ -31,7 +31,7 @@ class User(UserMixin, db.Model):
         lazy='dynamic'
     )
 
-    following: Mapped[List['User']] = relationship(
+    following: Mapped[List['User']] = so.relationship(
         secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
@@ -56,10 +56,6 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def avatar(self, size):
-        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
-        return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
-
     def follow(self, user):
         if not self.is_following(user):
             self.following.append(user)
@@ -73,21 +69,25 @@ class User(UserMixin, db.Model):
 
     def following_count(self):
         return self.following.count()
+    
+    def avatar(self, size):
+        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
+        return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
+    
+    def is_following(self, user):
+        return self.following.filter(followers.c.followed_id == user.id).count() > 0
 
-def followed_posts(self):
-    followed = sa.select(Post).join(
-        followers, followers.c.followed_id == Post.user_id
-    ).where(followers.c.follower_id == self.id)
+    def followed_posts(self):
+        followed = sa.select(Post).join(
+            followers, followers.c.followed_id == Post.user_id
+        ).where(followers.c.follower_id == self.id)
 
-    own = sa.select(Post).where(Post.user_id == self.id)
+        own = sa.select(Post).where(Post.user_id == self.id)
 
-    return db.session.execute(
-        followed.union(own).order_by(Post.timestamp.desc())
-    ).scalars()
-User.followed_posts = followed_posts
-
-
-
+        return db.session.execute(
+            followed.union(own).order_by(Post.timestamp.desc())
+        ).scalars()
+        
 @login.user_loader
 def load_user(id):
     return db.session.execute(sa.select(User).where(User.id == int(id))).scalar_one_or_none()
