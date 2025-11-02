@@ -1,7 +1,7 @@
 <table>
     <tr valign="top">        
         <td>
-            <img src="{{ post.author.avatar(36) if post.author else url_for('static', filename='default_avatar.png') }}" width="36" height="36">
+            <img src="{{ post.author.avatar(36) if post.author and post.author.email else url_for('static', filename='default_avatar.png') }}" width="36" height="36">
         </td>
         <td>
             {% if post.author %}

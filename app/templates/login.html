@@ -17,6 +17,10 @@
             {% for error in form.password.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
+        <p>
+            Forget your password? 
+            <a href="{{ url_for('main.reset_password_request') }}">Reset Password</a>
+        </p>
         </p>
         <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
         <p>{{ form.submit() }}</p>

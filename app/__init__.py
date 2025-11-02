@@ -1,18 +1,20 @@
+import logging
+from logging.handlers import SMTPHandler, RotatingFileHandler
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
+from flask_mail import Mail
 from config import Config
-import logging
-from logging.handlers import SMTPHandler, RotatingFileHandler
-import os
 
 app = Flask(__name__)
 app.config.from_object(Config)
-db = SQLAlchemy()
-migrate = Migrate()
-login = LoginManager()
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+login = LoginManager(app)
 login.login_view = 'main.login'  # navnet på login-ruten i blueprint
+mail = Mail()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -21,6 +23,7 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login.init_app(app)
+    mail.init_app(app)
 
     from app.routes import bp as main_bp
     app.register_blueprint(main_bp)
@@ -30,6 +33,7 @@ def create_app(config_class=Config):
 
     from app import models
     from app.models import User
+
 
     # 👇 Flytt hele denne blokken inn i funksjonen
     if not app.debug:
