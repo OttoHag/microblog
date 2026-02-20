@@ -4,7 +4,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as so
 from urllib.parse import urlparse
 from datetime import datetime
-from app import app, db
+from app import db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, EmptyForm, PostForm
 from app.models import User, Post
 from app.forms import ResetPasswordRequestForm
@@ -32,7 +32,7 @@ def index():
     
     page = request.args.get('page', 1, type=int)
     query = current_user.followed_posts_query()
-    posts = db.paginate(query, page=page, per_page=app.config['POSTS_PER_PAGE'], error_out=False)
+    posts = db.paginate(query, page=page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
     next_url = url_for('main.index', page=posts.next_num) if posts.has_next else None
     prev_url = url_for('main.index', page=posts.prev_num) if posts.has_prev else None
     
@@ -45,7 +45,7 @@ def explore():
     page = request.args.get('page', 1, type=int)
     query = Post.query.order_by(Post.timestamp.desc())
     posts = db.paginate(query, page=page,
-                        per_page=app.config['POSTS_PER_PAGE'], error_out=False)
+                        per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
     next_url = url_for('main.explore', page=posts.next_num) if posts.has_next else None
     prev_url = url_for('main.explore', page=posts.prev_num) if posts.has_prev else None
 
@@ -109,7 +109,7 @@ def user(username):
     user = User.query.filter_by(username=username).first_or_404()
     page = request.args.get('page', 1, type=int)
     posts = Post.query.filter(Post.timestamp != None).order_by(Post.timestamp.desc()).paginate(
-        page=page, per_page=app.config['POSTS_PER_PAGE'], error_out=False)
+        page=page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
 
     
     next_url = url_for('main.user', username=user.username, page=posts.next_num) if posts.has_next else None

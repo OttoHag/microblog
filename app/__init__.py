@@ -8,34 +8,35 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from config import Config
 
-app = Flask(__name__)
-app.config.from_object(Config)
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-login = LoginManager(app)
-login.login_view = 'main.login'  # navnet på login-ruten i blueprint
+db = SQLAlchemy()
+migrate = Migrate()
+login = LoginManager()
 mail = Mail()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
+    # Initialize extensions with app
     db.init_app(app)
     migrate.init_app(app, db)
     login.init_app(app)
+    login.login_view = 'main.login'
     mail.init_app(app)
 
+    # Register blueprints
     from app.routes import bp as main_bp
     app.register_blueprint(main_bp)
 
     from app.error import bp_error
     app.register_blueprint(bp_error)
 
-    from app import models
-    from app.models import User
+    # Import models after extensions are initialized
+    with app.app_context():
+        from app import models
+        from app.models import User
 
-
-    # 👇 Flytt hele denne blokken inn i funksjonen
+    # Configure logging
     if not app.debug:
         if app.config.get('MAIL_SERVER'):
             auth = None
@@ -64,4 +65,4 @@ def create_app(config_class=Config):
         app.logger.setLevel(logging.INFO)
         app.logger.info('Microblog startup')
 
-    return app  # 👈 Nå ligger den riktig!
+    return app
