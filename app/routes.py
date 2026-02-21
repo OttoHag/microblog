@@ -7,7 +7,7 @@ from datetime import datetime
 from app import db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, EmptyForm, PostForm
 from app.models import User, Post
-from app.forms import ResetPasswordRequestForm
+from app.forms import ResetPasswordRequestForm, ResetPasswordForm
 from app.email import send_password_reset_email
 
 bp = Blueprint('main', __name__)
@@ -175,3 +175,18 @@ def reset_password_request():
         flash('Check your email for the instructions to reset your password')
         return redirect(url_for('main.login'))
     return render_template('reset_password_request.html', title='Reset Password', form=form)
+
+@bp.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    user = User.verify_reset_password_token(token)
+    if not user:
+        return redirect(url_for('main.index'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        db.session.commit()
+        flash('Your password has been reset.')
+        return redirect(url_for('main.login'))
+    return render_template('reset_password.html', title='Reset Password', form=form)
