@@ -30,13 +30,17 @@ class User(UserMixin, db.Model):
     posts: so.Mapped[List['Post']] = so.relationship(back_populates='author', lazy='dynamic')
 
     def followed_posts_query(self):
-        return Post.query.join(
-    followers, (followers.c.followed_id == Post.user_id)
-).filter(
-    followers.c.follower_id == self.id
-).union(
-    Post.query.filter_by(user_id=self.id)
-).order_by(Post.timestamp.desc())
+        # Subquery to get post IDs from followed users and own posts
+        followed = sa.select(Post.id).join(
+            followers, followers.c.followed_id == Post.user_id
+        ).where(followers.c.follower_id == self.id)
+        
+        own = sa.select(Post.id).where(Post.user_id == self.id)
+        
+        all_ids = followed.union_all(own).subquery()
+        
+        # Now select full Post objects where ID is in the subquery
+        return sa.select(Post).where(Post.id.in_(sa.select(all_ids))).order_by(Post.timestamp.desc())
     def get_reset_password_token(self, expires_in=600):
         return jwt.encode(
             {'reset_password': self.id, 'exp': time() + expires_in},

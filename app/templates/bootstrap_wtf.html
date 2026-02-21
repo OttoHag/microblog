@@ -1,0 +1,27 @@
+{% macro quick_form(form) %}
+  <form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    {% for field in form if field.widget.input_type != 'hidden' and field.type != 'SubmitField' %}
+      <div class="mb-3">
+        {{ field.label(class="form-label") }}
+        {% if field.type in ['StringField', 'PasswordField', 'TextAreaField'] %}
+          {% if field.type == 'TextAreaField' %}
+            {{ field(class="form-control", rows=4) }}
+          {% else %}
+            {{ field(class="form-control") }}
+          {% endif %}
+        {% else %}
+          {{ field(class="form-control") }}
+        {% endif %}
+        {% if field.errors %}
+          {% for error in field.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    {% endfor %}
+    {% for field in form if field.type == 'SubmitField' %}
+      {{ field(class="btn btn-primary") }}
+    {% endfor %}
+  </form>
+{% endmacro %}

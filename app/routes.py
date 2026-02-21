@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request, current_app
+from flask import Blueprint, render_template, flash, redirect, url_for, request, current_app, session
 from flask_login import current_user, login_user, logout_user, login_required
 import sqlalchemy as sa
 import sqlalchemy.orm as so
@@ -11,6 +11,16 @@ from app.forms import ResetPasswordRequestForm, ResetPasswordForm
 from app.email import send_password_reset_email
 
 bp = Blueprint('main', __name__)
+
+@bp.route('/set_language/<lang>')
+def set_language(lang):
+    if lang not in current_app.config['LANGUAGES']:
+        return redirect(url_for('main.index'))
+    session['lang'] = lang
+    next_page = request.args.get('next')
+    if not next_page or urlparse(next_page).netloc != '':
+        next_page = url_for('main.index')
+    return redirect(next_page)
 
 @bp.before_app_request
 def before_request():
@@ -43,7 +53,7 @@ def index():
 @login_required
 def explore():
     page = request.args.get('page', 1, type=int)
-    query = Post.query.order_by(Post.timestamp.desc())
+    query = sa.select(Post).order_by(Post.timestamp.desc())
     posts = db.paginate(query, page=page,
                         per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
     next_url = url_for('main.explore', page=posts.next_num) if posts.has_next else None
@@ -106,10 +116,13 @@ def register():
 @bp.route('/user/<username>')
 @login_required
 def user(username):
-    user = User.query.filter_by(username=username).first_or_404()
+    user = db.session.scalar(sa.select(User).where(User.username == username))
+    if user is None:
+        flash('User not found.')
+        return redirect(url_for('main.index'))
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.filter(Post.timestamp != None).order_by(Post.timestamp.desc()).paginate(
-        page=page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
+    query = sa.select(Post).where(Post.user_id == user.id).order_by(Post.timestamp.desc())
+    posts = db.paginate(query, page=page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
 
     
     next_url = url_for('main.user', username=user.username, page=posts.next_num) if posts.has_next else None
@@ -130,7 +143,7 @@ def test_email():
 def follow(username):
     form = EmptyForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=username).first()
+        user = db.session.scalar(sa.select(User).where(User.username == username))
         if user is None:
             flash('User {} not found.'.format(username))
             return redirect(url_for('main.index'))
@@ -149,7 +162,7 @@ def follow(username):
 def unfollow(username):
     form = EmptyForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=username).first()
+        user = db.session.scalar(sa.select(User).where(User.username == username))
         if user is None:
             flash('User {} not found.'.format(username))
             return redirect(url_for('main.index'))
