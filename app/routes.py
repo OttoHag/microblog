@@ -1,14 +1,16 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request, current_app, session
+from flask import Blueprint, render_template, flash, redirect, url_for, request, current_app, session, jsonify
 from flask_login import current_user, login_user, logout_user, login_required
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 from urllib.parse import urlparse
 from datetime import datetime
+from langdetect import detect, LangDetectException
 from app import db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, EmptyForm, PostForm
 from app.models import User, Post
 from app.forms import ResetPasswordRequestForm, ResetPasswordForm
 from app.email import send_password_reset_email
+from app.translate import translate
 
 bp = Blueprint('main', __name__)
 
@@ -34,7 +36,11 @@ def before_request():
 def index():
     form = PostForm()
     if form.validate_on_submit():
-        post = Post(body=form.post.data, author=current_user)
+        try:
+            language = detect(form.post.data)
+        except LangDetectException:
+            language = ''
+        post = Post(body=form.post.data, author=current_user, language=language)
         db.session.add(post)
         db.session.commit()
         flash('Your post is now live!')
@@ -203,3 +209,18 @@ def reset_password(token):
         flash('Your password has been reset.')
         return redirect(url_for('main.login'))
     return render_template('reset_password.html', title='Reset Password', form=form)
+
+
+@bp.route('/translate', methods=['POST'])
+@login_required
+def translate_text():
+    data = request.get_json()
+    text = data.get('text', '')
+    source_lang = data.get('source_language', '')
+    dest_lang = data.get('dest_language', '')
+    
+    if not text or not dest_lang:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    translated = translate(text, source_lang, dest_lang)
+    return jsonify({'text': translated})

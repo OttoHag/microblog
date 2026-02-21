@@ -122,6 +122,7 @@ class Post(db.Model):
     body: so.Mapped[str] = so.mapped_column(sa.String(140))
     timestamp: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow, index=True)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('user.id'), index=True)
+    language: so.Mapped[str] = so.mapped_column(sa.String(5), nullable=True)
 
     author: so.Mapped['User'] = so.relationship(back_populates='posts', lazy='joined')
 
@@ -130,3 +131,5 @@ class Post(db.Model):
 
     def __str__(self):
         return f'Post(id={self.id}, body="{self.body}", timestamp={self.timestamp}, user_id={self.user_id})'
+
+    language: so.Mapped[Optional[str]] = so.mapped_column(sa.String(5))

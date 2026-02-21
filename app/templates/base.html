@@ -36,7 +36,7 @@
                 {{ _('Language') }}
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
-                {% set language_labels = {'en': _('English'), 'es': _('Spanish'), 'no': _('Norwegian')} %}
+                {% set language_labels = {'en': _('English'), 'es': _('Spanish'), 'no': _('Norwegian'), 'da': _('Danish'), 'se': _('Swedish')} %}
                 {% for lang in config['LANGUAGES'] %}
                 <li>
                   <a class="dropdown-item" href="{{ url_for('main.set_language', lang=lang, next=request.full_path) }}">

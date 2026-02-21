@@ -11,7 +11,42 @@
       </a>
       {{ _('said') }} {{ moment(post.timestamp).fromNow() }}:
       <br>
-      {{ post.body }}
+      <span id="post-{{ post.id }}">{{ post.body }}</span>
+      {% if post.language and post.language != g.locale %}
+      <br><br>
+      <a href="#" class="translate-link" data-post-id="{{ post.id }}" data-source-lang="{{ post.language }}" data-dest-lang="{{ g.locale }}">{{ _('Translate') }}</a>
+      {% endif %}
     </td>
   </tr>
 </table>
+
+<script>
+document.querySelectorAll('.translate-link').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const postId = this.dataset.postId;
+    const postElement = document.getElementById('post-' + postId);
+    const sourceLanguage = this.dataset.sourceLang;
+    const destLanguage = this.dataset.destLang;
+    const text = postElement.textContent;
+    
+    fetch('{{ url_for("main.translate_text") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: text,
+        source_language: sourceLanguage,
+        dest_language: destLanguage
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      postElement.textContent = data.text;
+      this.style.display = 'none';  // Hide the translate link after translating
+    })
+    .catch(error => console.error('Translation error:', error));
+  });
+});
+</script>
